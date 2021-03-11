@@ -69,7 +69,7 @@ class DQNNetwork(nn.Module):
     del normalize_obs
 
     variance_sca = jax.nn.initializers.variance_scaling(scale=scl, mode= mod, distribution= distr)
-    initializers = init_ones if initzer==0 else (init_ones if initzer==1 else variance_sca)
+    initializers = init_zeros if initzer==0 else (init_ones if initzer==1 else variance_sca)
 
     if net_conf == 'minatar':
       x = x.squeeze(3)
@@ -134,7 +134,7 @@ class RainbowDQN(nn.Module):
   def apply(self, x, num_actions, net_conf, env, normalize_obs, noisy, dueling, initzer, scl, mod, distr, num_atoms, support, hidden_layer=2, neurons=512):
     del normalize_obs
     variance_sca = jax.nn.initializers.variance_scaling(scale=scl, mode= mod, distribution= distr)
-    initializers = init_ones if initzer==0 else (init_ones if initzer==1 else variance_sca)
+    initializers = init_zeros if initzer==0 else (init_ones if initzer==1 else variance_sca)
 
 
     if net_conf == 'minatar':
@@ -213,7 +213,7 @@ class QuantileNetwork(nn.Module):
   def apply(self, x, num_actions, net_conf, env, normalize_obs, noisy, dueling, initzer, scl, mod, distr, num_atoms,hidden_layer=2, neurons=512):
     del normalize_obs
     variance_sca = jax.nn.initializers.variance_scaling(scale=scl, mode= mod, distribution= distr)
-    initializers = init_ones if initzer==0 else (init_ones if initzer==1 else variance_sca)
+    initializers = init_zeros if initzer==0 else (init_ones if initzer==1 else variance_sca)
 
 
     if net_conf == 'minatar':
@@ -290,7 +290,7 @@ class ImplicitQuantileNetwork(nn.Module):
      
   def apply(self, x, num_actions, net_conf, env, hidden_layer, neurons, noisy, dueling, initzer, scl, mod, distr, quantile_embedding_dim, num_quantiles, rng):
     variance_sca = jax.nn.initializers.variance_scaling(scale=scl, mode= mod, distribution= distr)
-    initializers = init_ones if initzer==0 else (init_ones if initzer==1 else variance_sca)
+    initializers = init_zeros if initzer==0 else (init_ones if initzer==1 else variance_sca)
 
     if net_conf == 'minatar':
       x = x.squeeze(3)
