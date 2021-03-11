@@ -12,7 +12,7 @@ Specifically, we implement the following components:
   * dueling
 
 """
-
+import time
 import functools
 from dopamine.jax import networks
 from dopamine.jax.agents.dqn import dqn_agent
@@ -134,7 +134,13 @@ class JaxQuantileAgentNew(dqn_agent.JaxDQNAgent):
                num_atoms=200,
                noisy = False,
                dueling = False,
-               initzer = 'variance_scaling',
+               initzer = None,
+
+
+               scale=1.0/jnp.sqrt(3.0),
+               mode='fan_in',
+               distribution='uniform',
+
                net_conf = None,
                env = "CartPole", 
                normalize_obs = True,
@@ -144,7 +150,8 @@ class JaxQuantileAgentNew(dqn_agent.JaxDQNAgent):
                replay_scheme='prioritized',
                optimizer='adam',
                network=networks.QuantileNetwork,
-               epsilon_fn=dqn_agent.linearly_decaying_epsilon):
+               epsilon_fn=dqn_agent.linearly_decaying_epsilon,
+               seed=None):
     """Initializes the agent and constructs the Graph.
 
     Args:
@@ -186,6 +193,7 @@ class JaxQuantileAgentNew(dqn_agent.JaxDQNAgent):
       allow_partial_reload: bool, whether we allow reloading a partial agent
         (for instance, only the network parameters).
     """
+    seed = int(time.time() * 1e6) if seed is None else seed
     self._num_atoms = num_atoms
     self._kappa = kappa
     self._replay_scheme = replay_scheme
@@ -198,6 +206,9 @@ class JaxQuantileAgentNew(dqn_agent.JaxDQNAgent):
     self._noisy = noisy
     self._dueling = dueling
     self._initzer = initzer
+    self._scale = scale
+    self._mode = mode
+    self._distribution = distribution
 
     super(JaxQuantileAgentNew, self).__init__(
         num_actions=num_actions,
@@ -210,7 +221,11 @@ class JaxQuantileAgentNew(dqn_agent.JaxDQNAgent):
                                 neurons=self._neurons,
                                 noisy=self._noisy,
                                 dueling=self._dueling,
-                                initzer=self._initzer))
+                                initzer=self._initzer,
+                                scl=self._scale,
+                                mod=self._mode,
+                                distr=self._distribution))
+    self._rng = jax.random.PRNGKey(seed)
 
   def _create_network(self, name):
     r"""Builds a Quantile ConvNet.

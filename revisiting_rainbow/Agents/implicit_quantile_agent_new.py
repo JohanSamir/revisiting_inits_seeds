@@ -8,8 +8,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import time
 import functools
-
 from dopamine.jax import networks
 from dopamine.jax.agents.dqn import dqn_agent
 from dopamine.replay_memory import prioritized_replay_buffer 
@@ -310,7 +310,12 @@ class JaxImplicitQuantileAgentNew(dqn_agent.JaxDQNAgent):
                neurons=512,
                noisy = False,
                dueling = False,
-               initzer = 'variance_scaling',
+               initzer = None,
+
+               
+               scale=1.0/jnp.sqrt(3.0),
+               mode='fan_in',
+               distribution='uniform',
 
                observation_shape=dqn_agent.NATURE_DQN_OBSERVATION_SHAPE,
                observation_dtype=dqn_agent.NATURE_DQN_DTYPE,
@@ -334,7 +339,8 @@ class JaxImplicitQuantileAgentNew(dqn_agent.JaxDQNAgent):
                replay_scheme='prioritized',
                optimizer='adam',
                summary_writer=None,
-               summary_writing_frequency=500):
+               summary_writing_frequency=500,
+               seed=None):
     """Initializes the agent and constructs the necessary components.
 
     Most of this constructor's parameters are IQN-specific hyperparameters whose
@@ -383,7 +389,7 @@ class JaxImplicitQuantileAgentNew(dqn_agent.JaxDQNAgent):
         written. Lower values will result in slower training.
     """
     
-
+    seed = int(time.time() * 1e6) if seed is None else seed
     self._net_conf = net_conf
     self._env = env
     self._hidden_layer = hidden_layer
@@ -391,6 +397,9 @@ class JaxImplicitQuantileAgentNew(dqn_agent.JaxDQNAgent):
     self._noisy = noisy
     self._dueling = dueling
     self._initzer = initzer
+    self._scale = scale
+    self._mode = mode
+    self._distribution = distribution
 
     self._tau = tau
     self._alpha = alpha
@@ -424,6 +433,9 @@ class JaxImplicitQuantileAgentNew(dqn_agent.JaxDQNAgent):
                                 noisy=self._noisy,
                                 dueling=self._dueling,
                                 initzer=self._initzer,
+                                scl=self._scale,
+                                mod=self._mode,
+                                distr=self._distribution,
                                 quantile_embedding_dim=quantile_embedding_dim),
         gamma=gamma,
         update_horizon=update_horizon,
@@ -440,6 +452,7 @@ class JaxImplicitQuantileAgentNew(dqn_agent.JaxDQNAgent):
 
     self._num_actions=num_actions
     self._replay = self._build_replay_buffer()
+    self._rng = jax.random.PRNGKey(seed)
 
   def _create_network(self, name):
     r"""Builds an Implicit Quantile ConvNet.

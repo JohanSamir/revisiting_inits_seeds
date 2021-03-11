@@ -18,6 +18,7 @@ Details in:
 "Munchausen Reinforcement Learning" by Vieillard et al. (2020).
 
 """
+import time
 import functools
 from dopamine.jax import networks
 from dopamine.jax.agents.dqn import dqn_agent
@@ -166,12 +167,18 @@ class JaxDQNAgentNew(dqn_agent.JaxDQNAgent):
                replay_scheme='prioritized',
                noisy = False,
                dueling = False,
-               initzer = 'xavier_uniform',
+               initzer = None,
+
+               scale=1.0,
+               mode='fan_avg',
+               distribution='uniform',
+
                target_opt=0,
                mse_inf=False,
                network=networks.NatureDQNNetwork,
                optimizer='adam',
-               epsilon_fn=dqn_agent.linearly_decaying_epsilon):
+               epsilon_fn=dqn_agent.linearly_decaying_epsilon,
+               seed=None):
     """Initializes the agent and constructs the necessary components.
 
     Args:
@@ -210,7 +217,8 @@ class JaxDQNAgentNew(dqn_agent.JaxDQNAgent):
         (for instance, only the network parameters).
     """
     # We need this because some tools convert round floats into ints.
-
+    
+    seed = int(time.time() * 1e6) if seed is None else seed
     self._net_conf = net_conf
     self._env = env 
     self._normalize_obs = normalize_obs
@@ -224,6 +232,9 @@ class JaxDQNAgentNew(dqn_agent.JaxDQNAgent):
     self._tau = tau
     self._alpha = alpha
     self._clip_value_min = clip_value_min
+    self._scale = scale
+    self._mode = mode
+    self._distribution = distribution
 
     super(JaxDQNAgentNew, self).__init__(
         num_actions= num_actions,
@@ -235,11 +246,15 @@ class JaxDQNAgentNew(dqn_agent.JaxDQNAgent):
                                 neurons=self._neurons,
                                 noisy=self._noisy,
                                 dueling=self._dueling,
-                                initzer=self._initzer),
+                                initzer=self._initzer,
+                                scl=self._scale,
+                                mod=self._mode,
+                                distr=self._distribution),
         optimizer=optimizer,
         epsilon_fn=dqn_agent.identity_epsilon if self._noisy == True else epsilon_fn)
 
     self._replay_scheme = replay_scheme
+    self._rng = jax.random.PRNGKey(seed)
     state_shape = self.observation_shape + (self.stack_size,)
     self.state = onp.zeros(state_shape)
     self._optimizer_name = optimizer
