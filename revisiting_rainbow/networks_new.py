@@ -21,8 +21,8 @@ env_inf = {"CartPole":{"MIN_VALS": onp.array([-2.4, -5., -math.pi/12., -math.pi*
             "MountainCar":{"MIN_VALS":onp.array([-1.2, -0.07]),"MAX_VALS": onp.array([0.6, 0.07])}
             }
 
-init_zeros = jax.nn.initializers.zeros()
-init_ones = jax.nn.initializers.ones()
+init_zeros = jax.nn.initializers.zeros
+init_ones = jax.nn.initializers.ones
 #---------------------------------------------------------------------------------------------------------------------
 
 @gin.configurable
