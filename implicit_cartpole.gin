@@ -1,15 +1,12 @@
 import dopamine.jax.agents.implicit_quantile.implicit_quantile_agent
 import dopamine.discrete_domains.run_experiment
 import dopamine.replay_memory.prioritized_replay_buffer
-
 import dopamine.jax.agents.dqn.dqn_agent
 import dopamine.jax.networks
 import dopamine.discrete_domains.gym_lib
-
+import external_configurations
 import networks_new
 import implicit_quantile_agent_new
-import jax
-import jax.numpy as jnp
 
 JaxImplicitQuantileAgentNew.observation_shape = %gym_lib.CARTPOLE_OBSERVATION_SHAPE
 JaxImplicitQuantileAgentNew.observation_dtype = %jax_networks.CARTPOLE_OBSERVATION_DTYPE
@@ -25,15 +22,12 @@ JaxImplicitQuantileAgentNew.net_conf = 'classic'
 JaxImplicitQuantileAgentNew.env = 'CartPole'
 JaxImplicitQuantileAgentNew.hidden_layer = 2
 JaxImplicitQuantileAgentNew.neurons = 512
-JaxImplicitQuantileAgentNew.noisy = False
-JaxImplicitQuantileAgentNew.double_dqn = False
-JaxImplicitQuantileAgentNew.dueling = False
-JaxImplicitQuantileAgentNew.initzer = None
-JaxImplicitQuantileAgentNew.scale = 1.0/jnp.sqrt(3.0)
-JaxImplicitQuantileAgentNew.mode = 'fan_in'
-JaxImplicitQuantileAgentNew.distribution = 'uniform'
+JaxImplicitQuantileAgentNew.noisy = True
+JaxImplicitQuantileAgentNew.double_dqn = True
+JaxImplicitQuantileAgentNew.dueling = True
+JaxImplicitQuantileAgentNew.initzer = @variance_scaling #@variance_scaling #@zeros #@ones
 
-JaxImplicitQuantileAgentNew.replay_scheme = 'uniform'# prioritized or uniform
+JaxImplicitQuantileAgentNew.replay_scheme = 'prioritized'# prioritized or uniform
 JaxImplicitQuantileAgentNew.kappa = 1.0
 
 JaxImplicitQuantileAgentNew.num_tau_samples = 32#64
@@ -48,7 +42,7 @@ JaxImplicitQuantileAgentNew.clip_value_min = -1#-1e3
 JaxImplicitQuantileAgentNew.optimizer = 'adam'
 JaxImplicitQuantileAgentNew.network  = @networks_new.ImplicitQuantileNetwork
 JaxImplicitQuantileAgentNew.epsilon_fn = @dqn_agent.identity_epsilon #@dqn_agent.linearly_decaying_epsilon
-JaxImplicitQuantileAgentNew.target_opt = 1 # 0 target_quantile and 1 munchau_target_quantile 
+JaxImplicitQuantileAgentNew.target_opt = 0 # 0 target_quantile and 1 munchau_target_quantile 
 
 create_optimizer.learning_rate = 0.0001
 create_optimizer.eps =0.0003125
